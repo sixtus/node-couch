@@ -37,7 +37,7 @@ function _interact(verb, path, successStatus, options, port, host) {
 		request = client[verb](requestPath, [["Content-Length", requestBody.length]]);
 		request.sendBody(requestBody, "utf8");
 	} else {
-		request = client[verb](requestPath)
+		request = client[verb](requestPath);
 	}
 	request.finish(function(response) {
 		var responseBody = "";
@@ -49,7 +49,7 @@ function _interact(verb, path, successStatus, options, port, host) {
 		
 		response.onBodyComplete = function() {
 			responseBody = JSON.parse(responseBody);
-			if (response.statusCode == successStatus) {
+			if (response.statusCode === successStatus) {
 				if (options.success) {
 					options.success(responseBody);
 				}
@@ -186,7 +186,7 @@ exports.CouchDB = {
 					}
 				}
 
-				this.interact("delete", doc._id, 200, options);
+				this.interact("del", doc._id, 200, options);
 			},
 
 			view : function(name, options) {
