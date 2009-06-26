@@ -4,7 +4,7 @@ node-couch - A CouchDB client for node.js
 If the header is not enough for you:
 
 * [CouchDB](http://couchdb.org/)
-* [This link](http://tinyclouds.org/node/)
+* [node.js](http://tinyclouds.org/node/)
 
 The API is inspired by jquery.node.js.
 
