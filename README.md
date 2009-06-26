@@ -8,6 +8,6 @@ If the header is not enough for you:
 
 The API is inspired by jquery.node.js.
 
-This is very basically an initial check-in, please bear with me :-)
+This is a very initial check-in, please bear with me :-)
 
 Feedback welcome.
