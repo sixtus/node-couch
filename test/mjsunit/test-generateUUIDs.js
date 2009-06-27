@@ -2,7 +2,7 @@ include("mjsunit.js");
 include("../../module/node-couch.js");
 
 function unwantedError(result) {
-	throw new Exception("Unwanted error " + result);
+	throw("Unwanted error" + JSON.stringify(result));
 }
 
 var result = 0;

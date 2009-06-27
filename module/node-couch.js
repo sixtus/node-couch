@@ -162,12 +162,16 @@ exports.CouchDB = {
 				doc = doc || {};
 				var success = options.success;
 				options.success = function(result) {
-					doc._id = result._id;
-					doc._rev = result._rev;
-					if (success) { success(result); }
+					if (!result.ok) {
+						options.error(result);
+					} else {
+						doc._id = result.id;
+						doc._rev = result.rev;
+					}
+					if (success) { success(doc); }
 				};
 
-				options.body = toJSON(doc);
+				options.body = doc;
 
 				if (doc._id === undefined) {
 					this.interact("post", "", 201, options);
@@ -178,13 +182,18 @@ exports.CouchDB = {
 
 			removeDoc : function(doc, options) {
 				options = options || {};
+				options.rev = doc._rev;
+
 				var success = options.success;
 				options.success = function(result) {
+					if (!result.ok) {
+						options.error(result);
+					}
 					delete doc._rev;
 					if (success) {
-						success(result); 
+						success(doc);						 
 					}
-				}
+				};
 
 				this.interact("del", doc._id, 200, options);
 			},
