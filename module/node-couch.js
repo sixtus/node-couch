@@ -25,7 +25,7 @@ function _interact(verb, path, successStatus, options, port, host) {
 	options = options || {};
 	var request;
 	
-	var client = new node.http.Client(port, host);
+	var client = node.http.createClient(port, host);
 	var requestPath = path + encodeOptions(options);
 	node.debug("COUCHING " + requestPath + " -> " + verb);
 	
@@ -43,11 +43,11 @@ function _interact(verb, path, successStatus, options, port, host) {
 		var responseBody = "";
 		response.setBodyEncoding("utf8");
 		
-		response.onBody = function(chunk) {
+		response.addListener("body", function(chunk) {
 			responseBody += chunk;
-		};
+		});
 		
-		response.onBodyComplete = function() {
+		response.addListener("complete", function() {
 			responseBody = JSON.parse(responseBody);
 			if (response.statusCode === successStatus) {
 				if (options.success) {
@@ -56,7 +56,7 @@ function _interact(verb, path, successStatus, options, port, host) {
 			} else if (options.error) {
 				options.error(responseBody);
 			}
-		};
+		});
 	});
 }
 
