@@ -20,12 +20,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
+var clients = {};
+
+function cache_client(port, host) {
+	var key = [port, host];
+	var client = clients[key];
+	if (client) {
+		return client;
+	} else {
+		return clients[key] = node.http.createClient(port, host);
+	}
+}
+
 function _interact(verb, path, successStatus, options, port, host) {
 	verb = verb.toLowerCase();
 	options = options || {};
 	var request;
 	
-	var client = node.http.createClient(port, host);
+	var client = cache_client(port, host);
 	var requestPath = path + encodeOptions(options);
 	node.debug("COUCHING " + requestPath + " -> " + verb);
 	
