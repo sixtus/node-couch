@@ -39,7 +39,9 @@ function _interact(verb, path, successStatus, options, port, host) {
 	
 	var client = cache_client(port, host);
 	var requestPath = path + encodeOptions(options);
-	node.debug("COUCHING " + requestPath + " -> " + verb);
+	if (CouchDB.debug) {
+		node.debug("COUCHING " + requestPath + " -> " + verb);
+	}
 	
 	if (options.body) {
 		if (verb === "get") {
@@ -98,9 +100,10 @@ function toJSON(obj) {
     return obj !== null ? JSON.stringify(obj) : null;
 }
 
-exports.CouchDB = {
+var CouchDB = {
 	defaultPort : 5984,
 	defaultHost : "127.0.0.1",
+	debug : true,
 	
 	activeTasks: function(options) {
 		_interact("get", "/_active_tasks", 200, options, CouchDB.defaultPort, CouchDB.defaultHost);
@@ -217,3 +220,5 @@ exports.CouchDB = {
 		}	
 	}
 };
+
+exports.CouchDB = CouchDB;
