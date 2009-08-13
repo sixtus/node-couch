@@ -43,12 +43,17 @@ function _interact(verb, path, successStatus, options, port, host) {
 		node.debug("COUCHING " + requestPath + " -> " + verb);
 	}
 	
+	if (options.keys) {
+		options.body = {keys: options.keys};
+		delete options.keys;
+	}
+	
 	if (options.body) {
 		if (verb === "get") {
 			verb = "post";
 		}
 		var requestBody = toJSON(options.body);
-		request = client[verb](requestPath, [["Content-Length", requestBody.length]]);
+		request = client[verb](requestPath, [["Content-Length", requestBody.length], ["Content-Type", "application/json"]]);
 		request.sendBody(requestBody, "utf8");
 	} else {
 		request = client[verb](requestPath);
@@ -62,6 +67,9 @@ function _interact(verb, path, successStatus, options, port, host) {
 		});
 		
 		response.addListener("complete", function() {
+			if (CouchDB.debug) {
+				node.debug("COMPLETED " + requestPath + " -> " + verb);
+			}
 			responseBody = JSON.parse(responseBody);
 			if (response.statusCode === successStatus) {
 				if (options.success) {
