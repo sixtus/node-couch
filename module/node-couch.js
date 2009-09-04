@@ -45,7 +45,6 @@ function _interact(verb, path, successStatus, options, port, host) {
 	
 	if (options.keys) {
 		options.body = {keys: options.keys};
-		delete options.keys;
 	}
 	
 	if (options.body) {
@@ -87,7 +86,7 @@ function encodeOptions(options) {
   	if (typeof(options) === "object" && options !== null) {
     	for (var name in options) {
 			if (options.hasOwnProperty(name)) {
-				if (name === "request" || name === "error" || name === "success" || name === "body") {
+				if (name === "request" || name === "error" || name === "success" || name === "body" || name === "keys") {
 					continue;
 				}
 				
