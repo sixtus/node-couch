@@ -36,7 +36,7 @@ function cache_client(port, host) {
 }
 
 function _interact(verb, path, successStatus, options, port, host) {
-	verb = verb.toLowerCase();
+	verb = verb.toUpperCase();
 	options = options || {};
 	var request;
 	
@@ -48,31 +48,35 @@ function _interact(verb, path, successStatus, options, port, host) {
 	
 	if (options.keys) {
 		options.body = {keys: options.keys};
-	}
+	}	
 	
-	if (options.body) {
+	if (options.body) {    	
 		if (verb === "get") {
 			verb = "post";
 		}
 		var requestBody = toJSON(options.body);
-		request = client[verb](requestPath, [["Content-Length", requestBody.length], ["Content-Type", "application/json"]]);
-		request.sendBody(requestBody, "utf8");
+		request = client.request(verb, requestPath, [["Content-Length", requestBody.length], ["Content-Type", "application/json"]]);
+		request.write(requestBody, "utf8");
 	} else {
-		request = client[verb](requestPath);
+		request = client.request(verb, requestPath);
 	}
-	request.finish(function(response) {
-		var responseBody = "";
+	
+	request.addListener('response', function(response) {
+	    var responseBody = ""
+
 		response.setBodyEncoding("utf8");
 		
-		response.addListener("body", function(chunk) {
-			responseBody += chunk;
+		response.addListener("data", function(chunk) {
+		    responseBody += chunk
 		});
 		
-		response.addListener("complete", function() {
+		response.addListener("end", function() {
 			if (CouchDB.debug) {
 				sys.puts("COMPLETED " + requestPath + " -> " + verb);
+				sys.puts(responseBody)
 			}
 			responseBody = JSON.parse(responseBody);
+			
 			if (response.statusCode === successStatus) {
 				if (options.success) {
 					options.success(responseBody);
@@ -82,6 +86,9 @@ function _interact(verb, path, successStatus, options, port, host) {
 			}
 		});
 	});
+	
+	request.close()
+	
 }
 
 function encodeOptions(options) {
