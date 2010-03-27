@@ -1,5 +1,5 @@
-include("mjsunit.js");
-include("../../module/node-couch.js");
+var jslint = require("mjsunit"),
+		couch = require("../../module/node-couch").CouchDB;
 
 function unwantedError(result) {
 	throw("Unwanted error" + JSON.stringify(result));
@@ -7,16 +7,15 @@ function unwantedError(result) {
 
 var db;
 
-function onLoad () {
-	CouchDB.generateUUIDs({
-		count : 1,
-		success : withUUIDs,
-		error : unwantedError
-	});
-}
+couch.generateUUIDs({
+	count : 1,
+	success : withUUIDs,
+	error : unwantedError
+});
+
 
 function withUUIDs(uuids) {
-	db = CouchDB.db("test" + uuids[0]);
+	db = couch.db("test" + uuids[0]);
 	db.create({
 		success : withDB,
 		error : unwantedError
@@ -38,7 +37,7 @@ function afterCompact() {
 }
 
 function withInfo(info) {
-	assertEquals(db.name, info.db_name);
+	jslint.assertEquals(db.name, info.db_name);
 
 	db.drop({
 		success : afterDrop,
@@ -51,5 +50,5 @@ function afterDrop() {
 }
 
 function onExit() {
-	assertEquals("success", db, "Please check the chain, last callback was never reached");
+	jslint.assertEquals("success", db, "Please check the chain, last callback was never reached");
 }

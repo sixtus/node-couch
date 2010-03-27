@@ -1,7 +1,6 @@
-include("mjsunit.js");
-include("../../module/node-couch.js");
+var jslint = require("mjsunit"),
+    couch = require("../../module/node-couch").CouchDB;
 
-function onLoad () {
-	assertEquals(5984, CouchDB.defaultPort, "default port");
-	assertEquals("127.0.0.1", CouchDB.defaultHost, "default host");
-}
+jslint.assertEquals(5984, couch.defaultPort, "default port");
+jslint.assertEquals("127.0.0.1", couch.defaultHost, "default host");
+

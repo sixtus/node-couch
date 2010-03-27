@@ -1,21 +1,14 @@
-include("mjsunit.js");
-include("../../module/node-couch.js");
+var jslint = require("mjsunit"),
+		couch = require("../../module/node-couch").CouchDB;
 
 function unwantedError(result) {
 	throw("Unwanted error" + JSON.stringify(result));
 }
 
-var result;
+couch.activeTasks({
+	success : function(response) {
+		assertInstanceof(response, Array);
+	},
+	error : unwantedError
+});
 
-function onLoad () {
-	CouchDB.activeTasks({
-		success : function(response) {
-			result = response;
-		},
-		error : unwantedError
-	});
-}
-
-function onExit() {
-	assertInstanceof(result, Array);
-}
