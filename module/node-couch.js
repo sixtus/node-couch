@@ -21,30 +21,40 @@ THE SOFTWARE.
 */
 
 var sys = require('sys'),
-    http = require('http');
+    http = require('http'),
+    url = require('url'),
+    base64 = require('./base64');
 
 var clients = {};
 
-function cache_client(port, host) {
-	var key = [port, host];
-	var client = clients[key];
+function cache_client(host) {
+	var client = clients[host];
 	if (client) {
 		return client;
 	} else {
-		return clients[key] = http.createClient(port, host);
+    var uri = url.parse(host);
+		return clients[host] = http.createClient(uri.port, uri.hostname);
 	}
 }
 
-function _interact(verb, path, successStatus, options, port, host) {
+function _interact(verb, path, successStatus, options, host) {
 	verb = verb.toUpperCase();
 	options = options || {};
 	var request;
 	
-	var client = cache_client(port, host);
+	var client = cache_client(host);
 	var requestPath = path + encodeOptions(options);
 	if (CouchDB.debug) {
 		sys.puts("COUCHING " + requestPath + " -> " + verb);
 	}
+
+
+  var uri = url.parse(host);
+  var headers = {};
+  headers["Host"] = uri.hostname;
+  if (uri.auth) {
+    headers["Authorization"] = "Basic "+base64.encode(uri.auth);
+  }
 	
 	if (options.keys) {
 		options.body = {keys: options.keys};
@@ -55,10 +65,14 @@ function _interact(verb, path, successStatus, options, port, host) {
 			verb = "post";
 		}
 		var requestBody = toJSON(options.body);
-		request = client.request(verb, requestPath, [["Content-Length", requestBody.length], ["Content-Type", "application/json"]]);
+
+    headers["Content-Length"] = requestBody.length;
+    headers["Content-Type"] = "application/json";
+
+		request = client.request(verb, requestPath, headers);
 		request.write(requestBody, "utf8");
 	} else {
-		request = client.request(verb, requestPath);
+		request = client.request(verb, requestPath, headers);
 	}
 	
 	request.addListener('response', function(response) {
@@ -92,25 +106,25 @@ function _interact(verb, path, successStatus, options, port, host) {
 }
 
 function encodeOptions(options) {
-  	var result = [];
-  	if (typeof(options) === "object" && options !== null) {
-    	for (var name in options) {
-			if (options.hasOwnProperty(name)) {
-				if (name === "request" || name === "error" || name === "success" || name === "body" || name === "keys") {
-					continue;
-				}
-				
-				var value = options[name];
-	      		
-				if (name == "key" || name == "startkey" || name == "endkey") {
-	      			value = toJSON(value);
-				}
-				
-		      	result.push(encodeURIComponent(name) + "=" + encodeURIComponent(value));
+	var result = [];
+	if (typeof(options) === "object" && options !== null) {
+  	for (var name in options) {
+		if (options.hasOwnProperty(name)) {
+			if (name === "request" || name === "error" || name === "success" || name === "body" || name === "keys") {
+				continue;
 			}
+			
+			var value = options[name];
+      		
+			if (name == "key" || name == "startkey" || name == "endkey") {
+      			value = toJSON(value);
+			}
+			
+	      	result.push(encodeURIComponent(name) + "=" + encodeURIComponent(value));
 		}
-  	}
-  	return result.length ? ("?" + result.join("&")) : "";
+	}
+	}
+	return result.length ? ("?" + result.join("&")) : "";
 }
 
 function toJSON(obj) {
@@ -118,16 +132,16 @@ function toJSON(obj) {
 }
 
 var CouchDB = {
-	defaultPort : 5984,
-	defaultHost : "127.0.0.1",
+  // Possible basic auth eg: "http://admin:password@127.0.0.1:5984"
+	defaultHost : "http://localhost:5984",
 	debug : true,
 	
 	activeTasks: function(options) {
-		_interact("get", "/_active_tasks", 200, options, CouchDB.defaultPort, CouchDB.defaultHost);
+		_interact("get", "/_active_tasks", 200, options, CouchDB.defaultHost);
 	},
 	
 	allDbs : function(options) {
-		_interact("get", "/_all_dbs", 200, options, CouchDB.defaultPort, CouchDB.defaultHost);	
+		_interact("get", "/_all_dbs", 200, options, CouchDB.defaultHost);	
 	},
 	
 	generateUUIDs : function(options) {
@@ -139,21 +153,20 @@ var CouchDB = {
 		options.success = function(result) {
 			callback(result.uuids);
 		};
-		_interact("get", "/_uuids", 200, options, CouchDB.defaultPort, CouchDB.defaultHost);
+		_interact("get", "/_uuids", 200, options, CouchDB.defaultHost);
 	},
 	
-	db : function(name, port, host) {
+	db : function(name, host) {
 		return {
 			name : name,
 			uri  : "/" + encodeURIComponent(name) + "/",
-			port : port || CouchDB.defaultPort,
 			host : host || CouchDB.defaultHost,
 
 			interact : function(verb, path, successStatus, options, suppressPrefix) {
 				if (!suppressPrefix) {
 					path = this.uri + path;
 				}
-				_interact(verb, path, successStatus, options, this.port, this.host);
+				_interact(verb, path, successStatus, options, this.host);
 			},
 			
 			compact : function(options) {

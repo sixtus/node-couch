@@ -7,7 +7,7 @@ function unwantedError(result) {
 
 couch.activeTasks({
 	success : function(response) {
-		assertInstanceof(response, Array);
+		jslint.assertInstanceof(response, Array);
 	},
 	error : unwantedError
 });
