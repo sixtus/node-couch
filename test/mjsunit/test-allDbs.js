@@ -1,24 +1,21 @@
-include("mjsunit.js");
-include("../../module/node-couch.js");
+var jslint = require("mjsunit"),
+	couch = require("../../module/node-couch").CouchDB;
 
 function unwantedError(result) {
 	throw("Unwanted error" + JSON.stringify(result));
 }
 
-var result;
+couch.allDbs({
+	success : function(response) {
+		var result = response;
 
-function onLoad () {
-	CouchDB.allDbs({
-		success : function(response) {
-			result = response;
-		},
-		error : unwantedError
-	});
-}
+		jslint.assertInstanceof(result, Array);
+		for (var ii = 0; ii < result.length; ii++) {
+			jslint.assertEquals("string", typeof result[ii]);
+		}
 
-function onExit() {
-	assertInstanceof(result, Array);
-	for (var ii = 0; ii < result.length; ii++) {
-		assertEquals("string", typeof result[ii]);
-	}
-}
+	},
+	error : unwantedError
+});
+
+

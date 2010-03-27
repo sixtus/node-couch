@@ -1,5 +1,5 @@
-include("mjsunit.js");
-include("../../module/node-couch.js");
+var jslint = require("mjsunit"),
+		couch = require("../../module/node-couch").CouchDB;
 
 function unwantedError(result) {
 	throw("Unwanted error" + JSON.stringify(result));
@@ -10,16 +10,15 @@ var doc;
 var id;
 var rev;
 
-function onLoad () {
-	CouchDB.generateUUIDs({
-		count : 1,
-		success : withUUIDs,
-		error : unwantedError
-	});
-}
+couch.generateUUIDs({
+	count : 1,
+	success : withUUIDs,
+	error : unwantedError
+});
+
 
 function withUUIDs(uuids) {
-	db = CouchDB.db("test" + uuids[0]);
+	db = couch.db("test" + uuids[0]);
 	db.create({
 		success : withDB,
 		error : unwantedError
@@ -35,8 +34,8 @@ function withDB() {
 }
 
 function afterSave(returnVal) {
-	assertEquals(doc, returnVal, "should return the doc");
-	assertEquals(typeof doc._id, "string");
+	jslint.assertEquals(doc, returnVal, "should return the doc");
+	jslint.assertEquals(typeof doc._id, "string");
 	
 	id = doc._id;
 	rev = doc._rev;
@@ -48,10 +47,10 @@ function afterSave(returnVal) {
 }
 
 function afterUpdate(returnVal) {
-	assertEquals(doc, returnVal, "should return the doc");
-	assertEquals(typeof doc._id, "string");
-	assertFalse(doc._rev === rev, "rev did not update");
-	assertEquals(id, doc._id, "doc id changed");
+	jslint.assertEquals(doc, returnVal, "should return the doc");
+	jslint.assertEquals(typeof doc._id, "string");
+	jslint.assertFalse(doc._rev === rev, "rev did not update");
+	jslint.assertEquals(id, doc._id, "doc id changed");
 	
 	db.removeDoc(doc, {
 		success : afterRemove,
@@ -60,10 +59,10 @@ function afterUpdate(returnVal) {
 }
 
 function afterRemove(returnVal) {
-	assertEquals(doc, returnVal, "did not return the doc");
+	jslint.assertEquals(doc, returnVal, "did not return the doc");
 
-	assertTrue(doc._rev === undefined, "did not remove the rev");
-	assertEquals(id, doc._id, "changed the id");
+	jslint.assertTrue(doc._rev === undefined, "did not remove the rev");
+	jslint.assertEquals(id, doc._id, "changed the id");
 	
 	db.drop({
 		success : afterDrop,
@@ -76,5 +75,5 @@ function afterDrop() {
 }
 
 function onExit() {
-	assertEquals("success", db, "Please check the chain, last callback was never reached");
+	jslint.assertEquals("success", db, "Please check the chain, last callback was never reached");
 }
