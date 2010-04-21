@@ -1,5 +1,5 @@
 var jslint = require("mjsunit"),
-    couch = require("../../module/node-couch").CouchDB;
+    couch = require("../../lib").CouchDB;
 
 jslint.assertEquals("http://localhost:5984", couch.defaultHost, "default host");
 
