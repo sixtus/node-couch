@@ -24,11 +24,6 @@ var designDoc = {
         }
     }
 };
-var blogPosts = [
-    {
-        
-    }
-];
 
 var renderer = new blogsupport.CouchBlogRenderer(blogTitle);
 
@@ -52,7 +47,6 @@ function startBlog(){
     for(var i = 0, len = blogsupport.posts.length; i < len; i++){
         db.saveDoc(blogsupport.posts[i]);
     }
-
 
     var postRegex = /^\/posts\/([a-f0-9]*)$/;
     var feedRegex = /^\/feed$/;
