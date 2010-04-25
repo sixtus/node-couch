@@ -1,3 +1,6 @@
+// posts:
+//          Array of posts to seed the database with. (taken from http://jwf.us, 
+//          by Jason Feinstein with permission)
 exports.posts = [
     {
         _id: '1',
@@ -22,8 +25,33 @@ exports.posts = [
     }
 ];
 
+// designDoc:
+//          The CouchDB view page that will be used to get a reverse 
+//          chronologically-ordered list of posts for rendering.
+exports.designDoc = {
+    _id: "_design/blog",
+    language: "javascript",
+    views: {
+        posts_by_date: {
+            map: function(doc){
+                if(doc.type == "post"){
+                    emit(-Date.parse(doc.date), doc);
+                }
+            }
+        }
+    }
+};
+
 
 function CouchBlogRenderer(title){
+    // summary: 
+    //          Tool used to render the blog to HTML and RSS.
+    // description: 
+    //          Assumes blog posts will contain a format similar to those above 
+    //          and can render them to an RSS Feed, a main page (listing posts 
+    //          in reverse-chronological order), and individual pages.
+    // title: String
+    //          Title of the blog, defaults to "Blog".
     this.title = title || "Blog";
 }
 CouchBlogRenderer.prototype = {
@@ -92,5 +120,4 @@ CouchBlogRenderer.prototype = {
         res.end();
     }
 };
-
 exports.CouchBlogRenderer = CouchBlogRenderer;
